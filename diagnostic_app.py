@@ -1,18 +1,32 @@
 import streamlit as st
 from datetime import datetime, date
 
-# --- הגדרות עמוד ---
-st.set_page_config(page_title="Service Master - עברית", page_icon="🛡️", layout="centered")
+# --- הגדרות עמוד (Page Settings) ---
+st.set_page_config(page_title="Service Master - Hebrew", page_icon="🛡️", layout="centered")
 
 def main():
+    # כותרת ראשית (Main Title)
     st.title("🛡️ אשף קליטה ודיאגנוסטיקה")
     st.markdown("**מערכת מאוחדת לניהול תקלות חומרה ותוכנה**")
     st.markdown("---")
 
     # ==========================================
-    # חלק 1: זיהוי וציוד
+    # חלק 1: זיהוי וציוד (Identification)
     # ==========================================
     st.subheader("1️⃣ פרטי הציוד והלקוח")
+    
+    # --- כלי עזר למציאת S/N (חדש) ---
+    with st.expander("❓ איך למצוא מספר סידורי (S/N)? לחץ לעזרה"):
+        st.markdown("""
+        **1. בדיקה פיזית:**
+        - **מחשב נייד:** מדבקה בתחתית המחשב או מתחת לסוללה.
+        - **מחשב נייח:** מדבקה בגב המארז או בצד.
+        
+        **2. פקודה ב-Windows (אם המחשב נדלק):**
+        פתח את "שורת הפקודה" (CMD) והקלד:
+        """)
+        st.code("wmic bios get serialnumber", language="bash")
+
     col1, col2 = st.columns(2)
     with col1:
         client_name = st.text_input("שם לקוח / ארגון")
@@ -29,18 +43,18 @@ def main():
         st.info("נא לבחור סוג ציוד כדי להתחיל.")
         st.stop()
 
-    # משתנים לאיסוף נתונים
+    # משתנים לאיסוף נתונים (Variables Init)
     ticket_data = {}
     priority = "רגיל"
     is_critical_damage = False  # דגל לעצירת שאלות מיותרות (Stop-Factor)
     is_wrong_item = False       # דגל לטעות במשלוח
 
     # ==========================================
-    # חלק 2: היסטוריה ותאימות הזמנה (חדש!)
+    # חלק 2: היסטוריה ותאימות הזמנה (Logistics & History)
     # ==========================================
-    with st.expander("📅 היסטוריה, תאימות הזמנה ו-DOA", expanded=True):
+    with st.expander("📅 היסטוריה, תאימות הזמנה ו-Windows Tools", expanded=True):
         
-        # --- בדיקת תאימות הזמנה (חדש) ---
+        # --- בדיקת תאימות הזמנה (Wrong Item Check) ---
         st.markdown("**בדיקת משלוח:**")
         wrong_item_check = st.radio(
             "האם המוצר שקיבלת הוא המוצר שהזמנת?",
@@ -70,13 +84,35 @@ def main():
             st.error("🚨 **שים לב: DOA!** חובה לשמור את כל האריזות.")
             priority = "קריטי (DOA)"
 
+        st.markdown("---")
         # שינויי תוכנה
         software_changes = st.selectbox(
             "האם בוצעו שינויים לפני הופעת התקלה?",
             ["לא, עבדו רגיל", "התקנת תוכנה חדשה / משחק", "התקנה מחדש של מערכת הפעלה", "עדכון ביוס (BIOS Update)"]
         )
 
-    # אם זה מוצר לא נכון, אין טעם לשאול על שריטות או חשמל
+        # --- כלי עזר ל-Windows (חדש) ---
+        st.markdown("---")
+        st.markdown("🛠️ **כלי עזר לטכנאי (Windows Utilities):**")
+        
+        tab_key, tab_edition = st.tabs(["🔑 מציאת מפתח מוצר", "🔄 שינוי גרסה (Edition)"])
+        
+        with tab_key:
+            st.caption("השתמש בפקודה זו כדי למצוא את מפתח ה-Windows הצרוב בביוס (OEM Key):")
+            st.code("wmic path softwarelicensingservice get OA3xOriginalProductKey", language="powershell")
+        
+        with tab_edition:
+            st.caption("אם הלקוח התקין גרסה לא נכונה (למשל Home במקום Pro), נסה להשתמש במפתח הגנרי הזה לשדרוג:")
+            st.code("VK7JG-NPHTM-C97JM-9MPGT-3V66T", language="text")
+            st.markdown("""
+            **הוראות:**
+            1. נתק אינטרנט.
+            2. הגדרות (Settings) > עדכון ואבטחה > הפעלה (Activation).
+            3. "שנה מפתח מוצר" > הכנס את המפתח הנ"ל.
+            4. המחשב יעשה ריסט ויעבור ל-Pro (יש להפעיל אחר כך עם הרישיון החוקי).
+            """)
+
+    # אם זה מוצר לא נכון, עוצרים את הדיאגנוסטיקה
     if is_wrong_item:
         st.warning("⚠️ הדיאגנוסטיקה הטכנית נעצרה מכיוון שהתקבל מוצר שגוי.")
     else:
@@ -126,7 +162,7 @@ def main():
             }
 
         # ==========================================
-        # חלק 4: חשמל וחיבורים
+        # חלק 4: חשמל וחיבורים (Power & Connectivity)
         # ==========================================
         if not is_critical_damage:
             st.markdown("---")
@@ -157,7 +193,7 @@ def main():
                 power_report['standby'] = standby
 
         # ==========================================
-        # חלק 5: סימפטומים טכניים + חיבור מרחוק (חדש!)
+        # חלק 5: סימפטומים טכניים + חיבור מרחוק (Technical & Remote)
         # ==========================================
         diag_report = {}
 
@@ -170,8 +206,7 @@ def main():
                 ["אין תגובה (מת)", "נדלק ללא תמונה", "נתקע בטעינת Windows", "מסך כחול (BSOD)", "איטיות / רעש / התחממות"]
             )
             
-            # --- לוגיקת חיבור מרחוק (חדש!) ---
-            # מציגים את זה רק אם המחשב מצליח להגיע למערכת הפעלה או נתקע בדרך
+            # --- לוגיקת חיבור מרחוק (Remote Support Logic) ---
             remote_possible = False
             if boot_status in ["נתקע בטעינת Windows", "איטיות / רעש / התחממות"]:
                 st.info("ℹ️ המערכת זיהתה שהמחשב נדלק.")
@@ -201,7 +236,7 @@ def main():
             diag_report['status'] = "Skipped due to Physical Damage"
 
     # ==========================================
-    # חלק 6: סיום
+    # חלק 6: סיום (Conclusion)
     # ==========================================
     st.markdown("---")
     st.subheader("🏁 סיכום")
@@ -217,7 +252,7 @@ def main():
                 "device": device_type
             },
             "logistics": {
-                "wrong_item_received": is_wrong_item, # שדה חדש ב-JSON
+                "wrong_item_received": is_wrong_item,
                 "box_status": locals().get('box_condition', 'N/A')
             },
             "history": {
@@ -231,6 +266,7 @@ def main():
             "notes": notes
         }
 
+        # תצוגת סיכום צבעונית
         if priority == "קריטי (DOA)" or is_wrong_item:
             st.error(f"🚨 הקריאה נוצרה בעדיפות: {priority}")
         elif is_critical_damage:
