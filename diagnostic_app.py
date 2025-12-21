@@ -1,11 +1,12 @@
 import streamlit as st
 from datetime import datetime, date
+import json
 
-# --- הגדרות עמוד (Page Settings) ---
-st.set_page_config(page_title="Service Master - Windows 11 Style", page_icon="💻", layout="centered")
+# --- Page Config ---
+st.set_page_config(page_title="Service Master", page_icon="💻", layout="centered")
 
 def main():
-    # --- עיצוב בסגנון Windows 11 (Fluent Design CSS) ---
+    # --- CSS Styles (Windows 11 Fluent Design - FORCE LIGHT) ---
     st.markdown("""
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Segoe+UI&display=swap');
@@ -15,77 +16,88 @@ def main():
             color-scheme: light !important;
         }
 
-        /* 2. Global Reset */
+        /* 2. Global Layout & Fonts */
         .stApp {
             background-color: #F3F3F3 !important;
             color: #000000 !important;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
-            direction: rtl !important;
-            text-align: right !important;
+            direction: rtl; /* Right-to-Left layout */
+            text-align: right;
         }
 
-        /* 3. Text Visibility Override */
-        h1, h2, h3, h4, h5, h6, p, span, div, label, li, a, .stMarkdown, .stText, b, strong {
+        /* 3. Text Styling - Force Black */
+        h1, h2, h3, h4, h5, p, label, .stMarkdown, .stText, div, span, li, b, strong {
             color: #000000 !important;
-            text-align: right !important;
+            text-align: right;
+        }
+        h1 {
+            text-align: center !important;
+            color: #0078D4 !important;
+            font-weight: 600;
         }
 
-        h1 { text-align: center !important; }
-
-        /* 4. CUSTOM CODE BOX STYLE (HTML) */
-        .custom-code-box {
-            background-color: #FFFFFF !important;
-            border: 1px solid #0078D4 !important; /* Blue border to stand out */
-            color: #000000 !important;
-            padding: 10px;
-            border-radius: 4px;
-            font-family: 'Consolas', monospace;
-            direction: ltr !important; /* Code is LTR */
-            text-align: left !important;
-            margin-bottom: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        /* 5. EXPANDERS */
+        /* 4. EXPANDERS */
         .streamlit-expanderHeader {
             background-color: #FFFFFF !important;
             color: #000000 !important;
             border: 1px solid #D1D1D1 !important;
             border-radius: 4px !important;
-            direction: rtl !important;
-        }
-        .streamlit-expanderContent {
-            background-color: #FAFAFA !important;
-            color: #000000 !important;
-            border: 1px solid #D1D1D1 !important;
-            border-top: none !important;
-            direction: rtl !important;
         }
         div[data-testid="stExpander"] details summary {
             background-color: #FFFFFF !important;
             color: #000000 !important;
         }
+        div[data-testid="stExpander"] details summary:hover {
+            background-color: #F9F9F9 !important;
+            color: #000000 !important;
+        }
         div[data-testid="stExpander"] svg {
             fill: #000000 !important;
         }
-
-        /* 6. INPUT FIELDS */
-        input, textarea, select {
-            background-color: #FFFFFF !important;
+        .streamlit-expanderContent {
+            background-color: #FAFAFA !important;
+            border: 1px solid #D1D1D1 !important;
+            border-top: none !important;
             color: #000000 !important;
-            caret-color: #000000 !important;
-            text-align: right !important;
-            direction: rtl !important;
         }
-        .stTextInput > div > div, 
-        .stTextArea > div > div, 
-        .stNumberInput > div > div, 
-        .stDateInput > div > div {
+
+        /* 5. CODE BLOCKS */
+        [data-testid="stCodeBlock"] {
+            background-color: #FFFFFF !important;
+            border: 1px solid #D1D1D1 !important;
+            border-radius: 4px !important;
+            margin-bottom: 1rem;
+        }
+        [data-testid="stCodeBlock"] pre {
+            background-color: #FFFFFF !important;
+        }
+        [data-testid="stCodeBlock"] code {
+            color: #000000 !important;
+            background-color: #FFFFFF !important;
+            font-family: 'Consolas', monospace !important;
+        }
+        [data-testid="stCodeBlock"] span {
+            color: #000000 !important;
+        }
+        [data-testid="stCopyButton"] {
+            color: #000000 !important;
+        }
+        [data-testid="stCopyButton"] svg {
+            fill: #000000 !important;
+        }
+
+        /* 6. INPUTS */
+        .stTextInput > div > div > input,
+        .stTextArea > div > div > textarea {
             background-color: #FFFFFF !important;
             color: #000000 !important;
             border: 1px solid #D1D1D1 !important;
+            border-bottom: 2px solid #D1D1D1 !important;
             border-radius: 4px !important;
-            direction: rtl !important;
+        }
+        ::placeholder {
+            color: #666 !important;
+            opacity: 1 !important;
         }
 
         /* 7. DROPDOWNS */
@@ -93,12 +105,16 @@ def main():
             background-color: #FFFFFF !important;
             color: #000000 !important;
             border: 1px solid #D1D1D1 !important;
-            direction: rtl !important;
+        }
+        div[data-baseweb="select"] span {
+            color: #000000 !important;
+        }
+        div[data-baseweb="select"] svg {
+            fill: #000000 !important;
         }
         div[data-baseweb="popover"], div[data-baseweb="menu"], ul[data-baseweb="menu"] {
             background-color: #FFFFFF !important;
-            direction: rtl !important;
-            text-align: right !important;
+            border: 1px solid #D1D1D1 !important;
         }
         li[role="option"] {
             background-color: #FFFFFF !important;
@@ -107,333 +123,280 @@ def main():
             direction: rtl !important;
         }
         li[role="option"]:hover {
-            background-color: #E5E5E5 !important;
+            background-color: #E6F7FF !important;
         }
 
         /* 8. BUTTONS */
-        .stButton button {
+        .stButton > button {
             background-color: #0078D4 !important;
+            color: #FFFFFF !important;
             border: none !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+            border-radius: 4px !important;
+            font-weight: 600 !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .stButton button p, .stButton button span {
+        .stButton > button:hover {
+            background-color: #0067C0 !important;
+        }
+        .stButton > button p {
+            color: #FFFFFF !important;
+        }
+
+        /* 9. Link Buttons */
+        .stLinkButton a {
+            background-color: #0078D4 !important;
+            color: #FFFFFF !important;
+            border-radius: 4px !important;
+            text-decoration: none !important;
+            display: inline-block;
+            padding: 0.5rem 1rem;
+        }
+        .stLinkButton a:hover {
             color: #FFFFFF !important;
         }
         
-        /* 9. ALERTS */
-        .stAlert {
-            background-color: #FFFFFF !important;
-            border: 1px solid #D1D1D1 !important;
-            direction: rtl !important;
-            text-align: right !important;
-        }
-        
-        /* 10. ICONS & TABS */
-        div[data-baseweb="select"] svg, div[data-testid="stDateInput"] svg {
-            fill: #000000 !important;
-            color: #000000 !important;
-        }
+        /* 10. Tabs */
         .stTabs [data-baseweb="tab-list"] {
-            background-color: #FFFFFF !important;
+            gap: 5px;
         }
         .stTabs [data-baseweb="tab"] {
-            color: #000000 !important;
-            background-color: #FFFFFF !important;
+            background-color: #FFFFFF;
+            border-radius: 4px;
+            color: #000000;
         }
         .stTabs [aria-selected="true"] {
-            background-color: #E1DFDD !important;
-        }
-        img {
-            margin-left: auto;
-            margin-right: 0;
+            background-color: #E6F7FF !important;
+            color: #0078D4 !important;
+            font-weight: bold;
         }
 
+        /* Hide Streamlit Menu */
         #MainMenu {visibility: hidden;}
         footer {visibility: hidden;}
         </style>
     """, unsafe_allow_html=True)
 
-    # כותרות (Main Title)
-    st.title("🛡️ מערכת חכמה לניהול תקלות - מותאמת ללקוח")
-    
+    # --- HEADER ---
+    st.title("🛡️ מערכת חכמה לניהול תקלות")
+    st.markdown("<h5 style='text-align: center; color: #666 !important;'>מותאמת ללקוח (Service Master)</h5>", unsafe_allow_html=True)
+    st.markdown("---")
+
     # ==========================================
-    # חלק 1: זיהוי וציוד (Identification)
+    # 1. IDENTIFICATION
     # ==========================================
     st.markdown("### 1️⃣ זיהוי הלקוח והציוד")
     
     with st.expander("❓ איפה מוצאים את המספר הסידורי (S/N)?"):
         st.info("בדרך כלל זו מדבקה לבנה בתחתית המחשב הנייד או בגב המחשב הנייח.")
         
-        st.markdown("**אם המחשב דולק, ניתן למצוא את המספר דרך שורת הפקודה (CMD):**")
-        
-        # Инструкция CMD
+        st.markdown("**אם המחשב דולק, ניתן למצוא דרך הטרמינל (PowerShell):**")
         st.markdown("""
-        <div style="background-color: #E6F7FF; padding: 10px; border-radius: 5px; border: 1px solid #1890FF; margin-bottom: 5px; color: black;">
-        <strong>איך לפתוח?</strong> לחץ על <kbd>Win</kbd> + <kbd>R</kbd>, הקלד <code>cmd</code> ולחץ <strong>Enter</strong>.
+        <div style="background-color: #E6F7FF; padding: 10px; border-radius: 4px; border: 1px solid #91D5FF; color: black; margin-bottom: 10px;">
+        <strong>איך לפתוח?</strong> לחץ <b>קליק ימני</b> על כפתור <b>"התחל" (Start)</b> ובחר <b>Windows Terminal</b> או <b>PowerShell</b>.
         </div>
         """, unsafe_allow_html=True)
         
-        # ВМЕСТО ST.CODE ИСПОЛЬЗУЕМ HTML (Гарантированно белый фон)
-        st.markdown("""
-        <div class="custom-code-box">
-        wmic bios get serialnumber
-        </div>
-        """, unsafe_allow_html=True)
+        # New PowerShell command for SerialNumber
+        st.code("(Get-CimInstance Win32_BIOS).SerialNumber", language="powershell")
         
-        st.markdown("**אם קשה לקרוא את המספר, ניתן לצלם אותו בשלב הבא.**")
+        st.markdown("**או צלם את המדבקה למטה:**")
 
     col1, col2 = st.columns(2)
     with col1:
         client_name = st.text_input("שם לקוח / ארגון")
     with col2:
-        serial_number = st.text_input(
-            "מספר סידורי (S/N)",
-            help="נמצא על מדבקה לבנה, מתחיל בדרך כלל ב-SN, S/N או Service Tag"
-        )
+        serial_number = st.text_input("מספר סידורי (S/N)", help="למשל: 5CD1234567")
 
     if not serial_number:
-        st.caption("או צלם את המדבקה אם קשה לקרוא את הכתב:")
-        with st.expander("📷 לחץ כאן כדי לצלם (פתח מצלמה)"):
-            start_sn_cam = st.checkbox("הפעל מצלמה (Start Camera)", key="start_sn_cam")
-            if start_sn_cam:
-                sn_photo = st.camera_input("צלם מדבקת מספר סידורי", key="sn_cam")
+        with st.expander("📷 לחץ כאן לצילום המספר הסידורי"):
+            st.info("💡 בטלפון נייד: ניתן להחליף מצלמה (קדמית/אחורית) בכפתור בתוך המצלמה.")
+            start_cam = st.checkbox("הפעל מצלמה", key="cam_sn")
+            if start_cam:
+                sn_photo = st.camera_input("צלם את המדבקה", key="sn_img")
                 if sn_photo:
-                    st.success("תמונה נקלטה! הטכנאי יפענח את המספר.")
+                    st.success("התמונה נשמרה!")
 
     device_type = st.selectbox(
-        "איזה מכשיר יש ברשותך?",
-        ["", "מחשב נייד (Laptop)", "מחשב נייח (PC)", "מחשב הכל-באחד (All-in-One)", "שרת (Server)", "רכיב בודד (כרטיס/מעבד)"],
-        index=0
+        "סוג המכשיר:",
+        ["", "מחשב נייד (Laptop)", "מחשב נייח (PC)", "מחשב הכל-באחד (AIO)", "שרת (Server)", "רכיב (Component)"]
     )
 
     if not device_type:
-        st.info("אנא בחר את סוג המכשיר כדי להמשיך.")
+        st.info("נא לבחור סוג מכשיר כדי להמשיך.")
         st.stop()
 
-    ticket_data = {}
-    priority = "רגיל"
+    # Data collection containers
+    priority = "Normal"
     is_critical_damage = False
     is_wrong_item = False
 
     # ==========================================
-    # חלק 2: היסטוריה ותאימות הזמנה
+    # 2. HISTORY & WINDOWS TOOLS
     # ==========================================
-    with st.expander("📅 היסטוריית המכשיר (מתי הגיעה, מה קרה)", expanded=True):
+    with st.expander("📅 היסטוריה וכלים ל-Windows", expanded=True):
+        st.markdown("**האם זה המוצר הנכון?**")
+        wrong_item = st.radio("בדיקת משלוח:", ["כן, זה מה שהזמנתי", "לא, קיבלתי דגם אחר"], label_visibility="collapsed")
         
-        st.markdown("**בדיקת המוצר שקיבלת:**")
-        wrong_item_check = st.radio(
-            "האם זה המוצר שהזמנת?",
-            ("כן, זה המוצר הנכון", "לא - קיבלתי דגם אחר ממה שהזמנתי")
-        )
-
-        if wrong_item_check == "לא - קיבלתי דגם אחר ממה שהזמנתי":
-            st.error("📦 **עצור:** נראה שיש טעות במשלוח. נא לא לפתוח את האריזה! נציג יצור קשר להחלפה.")
-            priority = "לוגיסטיקה (טעות במשלוח)"
+        if "לא" in wrong_item:
+            st.error("📦 עצור: טעות במשלוח. נא לא לפתוח את האריזה.")
             is_wrong_item = True
+            priority = "Logistics Error"
         
         st.markdown("---")
-        
         col_h1, col_h2 = st.columns(2)
         with col_h1:
-            received_date = st.date_input("מתי קיבלת את המכשיר?", value=date.today())
+            received_date = st.date_input("תאריך קבלה", value=date.today())
         with col_h2:
-            first_boot_date = st.date_input("מתי הדלקת אותו לראשונה?", value=date.today())
-
-        initial_state = st.radio(
-            "האם המכשיר עבד בהתחלה?", 
-            ("כן, עבד תקין", "לא - המכשיר הגיע מקולקל (לא נדלק ישר מהקופסה)", "לא יודע / לא אני פתחתי")
-        )
-
-        if initial_state == "לא - המכשיר הגיע מקולקל (לא נדלק ישר מהקופסה)":
-            st.warning("🚨 **תקלת DOA (מקולקל מהאריזה):** אנא שמור את כל הניילונים והקופסה להחלפה.")
-            priority = "קריטי (DOA)"
+            first_boot = st.date_input("תאריך הפעלה ראשונה", value=date.today())
+            
+        initial_status = st.radio("מצב ראשוני:", ["עבד תקין", "לא עבד מההתחלה (DOA)"])
+        if "DOA" in initial_status:
+            st.warning("🚨 שים לב: תקלת DOA (Dead On Arrival).")
+            priority = "Critical (DOA)"
 
         st.markdown("---")
-        software_changes = st.selectbox(
-            "האם התקנת משהו לפני שהתקלה קרתה?",
-            ["לא, השתמשתי רגיל", "התקנתי תוכנה או משחק חדש", "ניסיתי להתקין ווינדוס מחדש", "עדכון ביוס (BIOS)", "לא יודע / לא בטוח"]
-        )
-
-        st.markdown("---")
-        st.markdown("#### 🛠️ כלי עזר ל-Windows")
+        st.markdown("#### 🛠️ כלי עזר לטכנאי (Windows)")
         
-        tab_key, tab_edition = st.tabs(["🔑 מציאת מפתח מוצר", "🔄 שינוי גרסה (Edition)"])
+        # Updated Tabs with new functionality
+        t1, t2, t3, t4 = st.tabs(["🔑 מפתח מוצר", "🔄 שינוי גרסה", "⚙️ לוח הבקרה", "♻️ איפוס"])
         
-        with tab_key:
-            st.markdown("""
-            <div style="background-color: #E6F7FF; padding: 10px; border-radius: 5px; border: 1px solid #1890FF; margin-bottom: 5px; color: black;">
-            <strong>פתח PowerShell:</strong> <kbd>Win</kbd> + <kbd>X</kbd> ➜ בחר <strong>Windows PowerShell</strong>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            # HTML CODE BLOCK
-            st.markdown("""
-            <div class="custom-code-box">
-            wmic path softwarelicensingservice get OA3xOriginalProductKey
-            </div>
-            """, unsafe_allow_html=True)
+        with t1:
+            st.caption("פתיחת PowerShell (קליק ימני על התחל):")
+            st.code("(Get-CimInstance SoftwareLicensingService).OA3xOriginalProductKey", language="powershell")
         
-        with tab_edition:
+        with t2:
+            st.markdown("##### שדרוג מ-Home ל-Pro")
             st.markdown("""
-            <div style="margin-bottom: 5px;">
-            <strong>שדרוג מ-Home ל-Pro (מפתח גנרי):</strong>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            # HTML CODE BLOCK
-            st.markdown("""
-            <div class="custom-code-box">
-            VK7JG-NPHTM-C97JM-9MPGT-3V66T
-            </div>
-            """, unsafe_allow_html=True)
-            
-            st.markdown("""
-            **הוראות:**
-            1. נתק אינטרנט.
-            2. לך ל: **הגדרות > עדכון ואבטחה > הפעלה**.
-            3. לחץ **"שנה מפתח מוצר"** והדבק את הקוד.
+            1. **חובה:** נתק את האינטרנט!
+            2. לך ל: `הגדרות` > `מערכת` > `הפעלה` > `שנה מפתח מוצר`.
+            3. הכנס את המפתח הגנרי:
             """)
+            st.code("VK7JG-NPHTM-C97JM-9MPGT-3V66T", language="text")
+            st.markdown("4. המחשב יעשה ריסט. לאחר מכן חבר אינטרנט והכנס את המפתח החוקי.")
+
+        with t3:
+            st.caption("פתיחת לוח הבקרה הישן (Control Panel):")
+            st.code("control", language="bash")
+            st.caption("לחץ Win+R והדבק את הפקודה.")
+
+        with t4:
+            st.caption("איפוס למצב יצרן (Reset):")
+            st.code("systemreset --factoryreset", language="bash")
+            st.caption("לחץ Win+R והדבק את הפקודה.")
 
     if is_wrong_item:
-        st.warning("⚠️ הדיאגנוסטיקה הסתיימה עקב טעות במשלוח.")
-    else:
-        # ==========================================
-        # חלק 3: בדיקה ויזואלית (Visual Inspection)
-        # ==========================================
-        st.markdown("### 2️⃣ בדיקה חיצונית")
-        has_damage = st.radio("הסתכל על המכשיר מכל הצדדים - האם רואים נזק?", ("לא, נראה שלם", "כן, יש שבר או מכה"))
+        st.warning("התהליך נעצר עקב טעות במשלוח.")
+        st.stop()
 
-        visual_report = {}
+    # ==========================================
+    # 3. PHYSICAL INSPECTION
+    # ==========================================
+    st.markdown("### 2️⃣ בדיקה חיצונית")
+    has_damage = st.radio("האם יש נזק פיזי?", ["לא, נראה שלם", "כן, יש שבר/מכה"])
+    
+    visual_report = {}
+    if "כן" in has_damage:
+        priority = "High (Physical)"
+        st.error("🛑 זוהה נזק פיזי. נדרש תיקון חומרה.")
+        is_critical_damage = True
+        
+        damage_list = st.multiselect("פירוט הנזק:", ["מסך שבור", "שקע טעינה", "נוזלים/קורוזיה", "פלסטיקה שבורה"])
+        box_status = st.selectbox("מצב הקופסה:", ["תקינה", "מעוכה/קרועה"])
+        
+        if "מעוכה" in box_status:
+            st.warning("📦 חשוב: צלם את הקופסה לביטוח!")
 
-        if has_damage == "כן, יש שבר או מכה":
-            priority = "גבוה (נזק פיזי)"
-            damage_options = []
-            if "נייד" in device_type:
-                damage_options = ["מסך שבור / סדוק", "פלסטיק שבור", "צירים עקומים", "נשפכו מים/קפה", "שקע טעינה רופף"]
-            elif "שרת" in device_type:
-                damage_options = ["אוזני ברזל עקומות", "מכה בפח", "חיבורים שבורים"]
-            elif "רכיב" in device_type:
-                damage_options = ["פינים עקומים", "חלקים תלושים", "סימני שרוף"]
-            else:
-                damage_options = ["מכה בגוף המחשב", "זכוכית שבורה", "יציאות USB שבורות"]
+        with st.expander("📷 צילום הנזק (פתח מצלמה)"):
+            st.info("ניתן להחליף מצלמה בכפתור המובנה בממשק.")
+            start_dmg_cam = st.checkbox("הפעל מצלמה", key="cam_dmg")
+            if start_dmg_cam:
+                dmg_img = st.camera_input("צלם נזק", key="dmg_cap")
+                
+        visual_report = {"damages": damage_list, "box": box_status}
 
-            specific_damage = st.multiselect("מה בדיוק ניזוק? (אפשר לבחור כמה)", damage_options)
-            critical_markers = ["מסך שבור / סדוק", "נשפכו מים/קפה", "סימני שרוף", "פינים עקומים"]
-            if any(item in specific_damage for item in critical_markers):
-                is_critical_damage = True
-                st.error("🛑 **נזק קריטי זוהה:** נראה שהמחשב דורש תיקון פיזי במעבדה. אין טעם להמשיך בשאלות תוכנה.")
+    # ==========================================
+    # 4. POWER CHECK
+    # ==========================================
+    st.markdown("### 3️⃣ בדיקת חשמל")
+    if "נייד" in device_type or "AIO" in device_type:
+        original_charger = st.radio("האם המטען מקורי?", ["כן", "לא / אוניברסלי"], horizontal=True)
+        
+        # New Voltage Check
+        voltage_match = st.radio(
+            "האם המתח (V) והזרם (A) הרשומים על המטען תואמים למדבקה על המחשב?", 
+            ["כן, תואם", "לא / לא בטוח"], 
+            horizontal=True
+        )
+        
+        if voltage_match == "לא / לא בטוח":
+            st.warning("⚠️ מתח לא תואם עלול לגרום לנזק לרכיבים או לבעיות טעינה.")
 
-            box_condition = st.radio("באיזה מצב הקופסה החיצונית?", ["שלמה ותקינה", "מעוכה קצת", "קרועה / רטובה / חור בקרטון", "זרקתי את הקופסה"])
-            if "קרועה" in box_condition:
-                st.warning("📦 **חשוב:** צלם את הקרטון! זה יעזור לנו מול חברת המשלוחים.")
+    # ==========================================
+    # 5. SYMPTOMS & ANYDESK
+    # ==========================================
+    diag_report = {}
+    if not is_critical_damage:
+        st.markdown("### 4️⃣ בעית תוכנה")
+        symptom = st.selectbox("מה התקלה?", ["לא נדלק", "מסך כחול", "איטי", "בעית תוכנה"])
+        
+        if symptom in ["איטי", "בעית תוכנה"]:
+            st.info("ננסה להתחבר מרחוק.")
+            has_net = st.checkbox("יש אינטרנט במחשב?")
+            if has_net:
+                st.success("מעולה! הורד את תוכנת התמיכה:")
+                st.link_button("⬇️ הורד תוכנת תמיכה - המלצה על AnyDesk", "https://150.co.il/")
+                st.text_input("הקלד את המספר (ID) שמופיע בתוכנה:")
 
-            st.write("📷 **תיעוד הנזק:**")
-            dmg_photo_cam = None
-            with st.expander("📷 לחץ כאן כדי לצלם תמונה (פתח מצלמה)"):
-                start_dmg_cam = st.checkbox("הפעל מצלמה (Start Camera)", key="start_dmg_cam")
-                if start_dmg_cam:
-                    dmg_photo_cam = st.camera_input("צלם את הנזק", key="dmg_cam")
-
-            dmg_photo_file = st.file_uploader("או בחר קובץ מהגלריה", accept_multiple_files=True)
-            visual_report = {
-                "damage_details": specific_damage,
-                "box_status": box_condition,
-                "photos_attached": bool(dmg_photo_cam or dmg_photo_file)
-            }
-
-        st.markdown("### 3️⃣ חיבורים לחשמל ולמסך")
-        power_report = {}
-
-        if "נייד" in device_type or "הכל-באחד" in device_type:
-            st.write("בדיקת מטען:")
-            is_original = st.radio("האם אתה משתמש במטען המקורי שהגיע בקופסה?", ("כן", "לא - מטען אחר / אוניברסלי"))
-            if st.checkbox("יש לי מטען עם חיבור USB-C (החיבור האליפטי הקטן)"):
-                st.info("💡 **טיפ:** נסה לחבר את המטען הזה לטלפון שלך.")
-                phone_test = st.radio("האם הטלפון מראה שהוא נטען?", ("כן, הטלפון נטען", "לא, אין תגובה"))
-                if phone_test == "לא, אין תגובה":
-                    st.error("❌ נראה שהמטען מקולקל. ייתכן שהמחשב תקין ורק צריך מטען חדש.")
-                    power_report['adapter_status'] = "Dead"
-
-        if "נייח" in device_type:
-            has_gpu = st.radio("האם יש למחשב כרטיס מסך נפרד (לגיימינג/עריכה)?", ("כן", "לא / לא יודע"))
-            if has_gpu == "כן":
-                st.markdown("#### 🔌 איפה חיברת את כבל המסך?")
-                st.caption("זוהי הטעות הנפוצה ביותר! השווה לתמונות למטה:")
-                col_img1, col_img2 = st.columns(2)
-                with col_img1:
-                    st.image("https://placehold.co/400x300/ffcccc/red?text=Motherboard+(WRONG)", caption="❌ חיבור למעלה (לוח אם) - לא נכון")
-                with col_img2:
-                    st.image("https://placehold.co/400x300/ccffcc/green?text=GPU+Card+(CORRECT)", caption="✅ חיבור למטה (כרטיס מסך) - נכון!")
-
-                cable_pos = st.radio("איפה הכבל מחובר אצלך?", ("כמו בתמונה הימנית (למטה - כרטיס מסך)", "כמו בתמונה השמאלית (למעלה - לוח אם)"))
-                if cable_pos == "כמו בתמונה השמאלית (למעלה - לוח אם)":
-                    st.warning("💡 **נמצאה הבעיה האפשרית!** כאשר מחברים את המסך לחיבור העליון, המחשב לא משתמש בכרטיס המסך ולכן אין תמונה. נא להעביר את הכבל לחיבורים התחתונים (האופקיים) ולעשות ריסט.")
-                    st.stop()
-
-        diag_report = {}
-        if not is_critical_damage:
-            st.markdown("### 4️⃣ אבחון תוכנה")
-            boot_status = st.selectbox(
-                "לחץ על כפתור ההפעלה. מה אתה רואה?",
-                ["כלום - שקט מוחלט, אין אורות", "המחשב מרעיש, אבל המסך נשאר שחור", "הווינדוס מתחיל להיטען ואז נתקע", "מסך כחול עם כיתוב לבן (שגיאה)", "המחשב איטי / מרעיש / מתחמם", "אחר / לא יודע להסביר"]
-            )
-            
-            if boot_status in ["הווינדוס מתחיל להיטען ואז נתקע", "המחשב איטי / מרעיש / מתחמם", "אחר / לא יודע להסביר"]:
-                st.info("ℹ️ נראה שהמחשב עובד חלקית. אולי נוכל לתקן מרחוק בלי שתגיע למעבדה!")
-                can_remote = st.radio("האם יש לך אינטרנט במחשב הזה?", ("לא - אין אינטרנט / לא נכנס לווינדוס", "כן - יש אינטרנט"))
-                if can_remote == "כן - יש אינטרנט":
-                    st.success("✅ מעולה! אנא הורד את תוכנת התמיכה כדי שנוכל להתחבר.")
-                    st.link_button("⬇️ הורד תוכנת תמיכה", "https://150.co.il/")
-                    st.text_input("הקלד כאן את המספר שמופיע בתוכנה (ID):")
-                    diag_report['remote_available'] = True
-                else:
-                    diag_report['remote_available'] = False
-            
-            if "מסך שחור" in boot_status:
-                beeps = st.text_input("האם שמעת צפצופים מהמחשב? (אם כן, נסה לתאר)", placeholder="למשל: 3 צפצופים קצרים")
-                diag_report['beeps'] = beeps
-            
-            elif "מסך כחול" in boot_status:
-                 diag_report['error_code'] = st.text_input("אם רשום קוד שגיאה באנגלית, הקלד אותו כאן:", placeholder="למשל: CRITICAL_PROCESS_DIED")
-
-        else:
-            st.markdown("---")
-            st.info("ℹ️ הדיאגנוסטיקה הסתיימה (נזק פיזי).")
-
+    # ==========================================
+    # 6. SUMMARY & REPORT
+    # ==========================================
     st.markdown("---")
-    st.markdown("### 🏁 סיכום ושליחה")
-    notes = st.text_area("האם יש עוד משהו שחשוב שנדע?")
+    st.markdown("### 🏁 סיום")
+    notes = st.text_area("הערות נוספות:")
 
-    if st.button("שלח טופס לטיפול"):
-        final_ticket = {
+    if st.button("שלח טופס (Generate Ticket)"):
+        # Create Data Structure
+        ticket = {
             "meta": {
-                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M"),
+                "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
                 "client": client_name,
                 "sn": serial_number,
                 "device": device_type
             },
-            "logistics": {
-                "wrong_item": is_wrong_item,
-                "box_status": locals().get('box_condition', 'N/A')
-            },
             "history": {
-                "doa_status": locals().get('initial_state', 'N/A'),
-                "software_changes": locals().get('software_changes', 'N/A')
+                "doa": initial_status,
+                "software": software_changes
             },
-            "physical_inspection": locals().get('visual_report', 'N/A'),
-            "diagnosis": locals().get('diag_report', {}),
+            "physical": visual_report,
             "priority": priority,
             "notes": notes
         }
-
-        if priority == "קריטי (DOA)" or is_wrong_item:
-            st.error(f"🚨 הטופס נשלח בדחיפות גבוהה: {priority}")
-        elif is_critical_damage:
-            st.warning("🛠️ הטופס נשלח: המכשיר יועבר למעבדת חומרה לתיקון פיזי.")
-        else:
-            st.success("✅ הטופס נשלח בהצלחה! ניצור איתך קשר בהקדם.")
-
-        st.json(final_ticket)
+        
+        st.success("✅ הטופס נשלח בהצלחה!")
+        st.json(ticket)
+        
+        # HTML Report Generation
+        html_report = f"""
+        <div dir="rtl" style="font-family: sans-serif; padding: 20px;">
+            <h1 style="color: #0078D4;">דוח שירות: {client_name}</h1>
+            <hr>
+            <p><strong>תאריך:</strong> {ticket['meta']['date']}</p>
+            <p><strong>מספר סידורי:</strong> {ticket['meta']['sn']}</p>
+            <p><strong>מכשיר:</strong> {ticket['meta']['device']}</p>
+            <p><strong>סטטוס DOA:</strong> {ticket['history']['doa']}</p>
+            <p><strong>עדיפות:</strong> {ticket['priority']}</p>
+            <div style="background: #eee; padding: 10px; margin-top: 10px;">
+                <strong>הערות:</strong> {notes}
+            </div>
+        </div>
+        """
+        
+        st.download_button(
+            "📄 הורד דוח (HTML/PDF)",
+            data=html_report,
+            file_name=f"Report_{serial_number}.html",
+            mime="text/html"
+        )
 
 if __name__ == "__main__":
     main()
